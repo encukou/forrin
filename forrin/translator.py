@@ -56,6 +56,31 @@ class BaseTranslator(object):
     """
     dir = 'i18n'
 
+    @property
+    def i18n_directory(self):
+        """Return the directory where translations are stored"""
+        return pkg_resources.resource_filename(
+                self.package,
+                self.dir
+            )
+
+    def available_languages(self, default='en'):
+        """Yield the available languages (not including the default)
+
+        default: The language used in code, for untranslated messages. Set to
+            None to disable a default.
+        """
+        i18n_dir = self.i18n_directory
+        if default:
+            yield default
+        for root, dirs, files in os.walk(i18n_dir):
+            components = root.split(os.sep)
+            if components[-1] == 'LC_MESSAGES':
+                if self.package + '.po' in files:
+                    lang = components[-2]
+                    if lang != default:
+                        yield components[-2]
+
     def __init__(self,
             context=None,
             languages=None,
@@ -64,21 +89,18 @@ class BaseTranslator(object):
             package=None,
         ):
         self.context = context
-        package = package or getattr(self, 'package', self.__module__)
+        self.package = package or getattr(self, 'package', self.__module__)
         if translations is None:
             if languages is None:
                 self.translation = gettext.NullTranslations()
                 self.language = None
             else:
                 if directory is None:
-                    directory = os.path.join(
-                            pkg_resources.resource_filename(package, ''),
-                            self.dir,
-                        )
-                gettext.bindtextdomain(package, directory)
+                    directory = self.i18n_directory
+                gettext.bindtextdomain(self.package, directory)
                 try:
                     self.translation = gettext.translation(
-                            domain=getattr(self, 'domain', package),
+                            domain=getattr(self, 'domain', self.package),
                             localedir=directory,
                             languages=languages,
                         )
@@ -88,7 +110,7 @@ class BaseTranslator(object):
                     self.language = None
                     warnings.warn(RuntimeWarning(
                             '%s translations for %s not found in %s'
-                                % (languages, package, directory)
+                                % (languages, self.package, directory)
                         ))
         else:
             self.translation = translations
