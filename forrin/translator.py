@@ -8,6 +8,32 @@ import pkg_resources
 
 import forrin.template
 
+class TranslatableString(object):
+    """Encapsulates a string and its translation information.
+
+    Aliased to _, this class can serve to mark strings for later translation,
+    in cases when the Translator is not available yet, or when a single string
+    is to be used with multiple translators.
+    For this purpose, TranslatableString is exported as forrin.translator._
+
+    Call a translator on a TranslatableString s you would on a regular string,
+    but without any extra arguments.
+    """
+    def __init__(self, message, plural=None, n=None, context=None, comment=None):
+        self.message = message
+        self.args = plural, n, context, comment
+
+    def __str__(self):
+        return str(self.message)
+
+    def __unicode__(self):
+        return unicode(self.message)
+
+    def __repr__(self):
+        return '<TranslatableString %r at 0x%08x>' % (self.message, id(self))
+
+_ = TranslatableString
+
 class BaseTranslator(object):
     """The translator. A callable object indended to be subclassed and used as _.
 
@@ -117,6 +143,11 @@ class BaseTranslator(object):
             self.language = None
 
     def __call__(self, message, plural=None, n=None, context=None, comment=None):
+        if isinstance(message, TranslatableString):
+            assert plural == n == context == comment == None, (
+                    "Translatable strings don't need extra information"
+                )
+            return self(message.message, *message.args)
         if context:
             prefix = context + u'|'
         else:
