@@ -82,11 +82,11 @@ class BaseTranslator(object):
                         yield components[-2]
 
     def __init__(self,
-            context=None,
             languages=None,
             translations=None,
             directory=None,
             package=None,
+            context=None,
         ):
         self.context = context
         self.package = package or getattr(self, 'package', self.__module__)
