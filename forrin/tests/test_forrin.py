@@ -44,25 +44,32 @@ translation_inputs = [
         (('a|b|c', 'd|e|f'), dict(n=3, context='ctx')),
     ]
 
+outputs_test = [
+        '|ugettext(text)',
+        '|ungettext(one, two, 1)',
+        '|ungettext(one, two, 3)',
+        '|ugettext(a|b|c)',
+        '|ungettext(a|b|c, d|e|f, 1)',
+        '|ungettext(a|b|c, d|e|f, 3)',
+        'ugettext(ctx|text)',
+        'ungettext(ctx|one, ctx|two, 1)',
+        'ungettext(ctx|one, ctx|two, 3)',
+        'ugettext(ctx|a|b|c)',
+        'ungettext(ctx|a|b|c, ctx|d|e|f, 1)',
+        'ungettext(ctx|a|b|c, ctx|d|e|f, 3)',
+    ]
+
 def test_translation_calls():
     _ = translator.BaseTranslator(translations=TestTranslations())
-    outputs = [
-            '|ugettext(text)',
-            '|ungettext(one, two, 1)',
-            '|ungettext(one, two, 3)',
-            '|ugettext(a|b|c)',
-            '|ungettext(a|b|c, d|e|f, 1)',
-            '|ungettext(a|b|c, d|e|f, 3)',
-            'ugettext(ctx|text)',
-            'ungettext(ctx|one, ctx|two, 1)',
-            'ungettext(ctx|one, ctx|two, 3)',
-            'ugettext(ctx|a|b|c)',
-            'ungettext(ctx|a|b|c, ctx|d|e|f, 1)',
-            'ungettext(ctx|a|b|c, ctx|d|e|f, 3)',
-        ]
-    for (args, kwargs), out in zip(translation_inputs, outputs):
+    for (args, kwargs), out in zip(translation_inputs, outputs_test):
         print args, kwargs, out
         assert_equal(_(*args, **kwargs), out)
+
+def test_translatable_string():
+    _ = translator.BaseTranslator(translations=TestTranslations())
+    for (args, kwargs), out in zip(translation_inputs, outputs_test):
+        print args, kwargs, out
+        assert_equal(_(translator.TranslatableString(*args, **kwargs)), out)
 
 def test_null_translation():
     _ = translator.BaseTranslator(translations=gettext.NullTranslations())
