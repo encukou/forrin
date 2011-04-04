@@ -13,9 +13,10 @@ setup(
             'polib>=0.5',
         ],
 
-    entry_points="""
-    [babel.extractors]
-    forrin = forrin.extract:babel_python
-    forrin-mako = forrin.extract:babel_mako
-    """,
+    entry_points = {
+            'babel.extractors': [
+                    'forrin = forrin.extract:babel_python',
+                    'forrin-mako = forrin.extract:babel_mako',
+                ]
+        },
 )
