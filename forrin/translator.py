@@ -2,13 +2,15 @@
 
 import os.path
 import warnings
+from collections import namedtuple
 
 import gettext
 import pkg_resources
 
 import forrin.template
 
-class TranslatableString(object):
+_Base = namedtuple('_base', 'message plural n context comment')
+class TranslatableString(_Base):
     """Encapsulates a string and its translation information.
 
     Aliased to _, this class can serve to mark strings for later translation,
@@ -19,12 +21,12 @@ class TranslatableString(object):
     Call a translator on a TranslatableString s you would on a regular string,
     but without any extra arguments.
     """
-    def __init__(self, message, plural=None, n=None, context=None, comment=None):
+    def __new__(cls, message, plural=None, n=None, context=None, comment=None):
         # Converting things to unicode strings makes this fail on instantiation
         # if they're not convertible (e.g. non-ASCII byte strings), rather than
         # waiting until the string is used.
-        self.message = unicode(message)
-        self.args = (
+        return _Base.__new__(cls,
+                unicode(message),
                 None if plural is None else unicode(plural),
                 None if n is None else int(n),
                 None if context is None else unicode(context),
@@ -155,7 +157,7 @@ class BaseTranslator(object):
             assert plural == n == context == comment == None, (
                     "Translatable strings don't need extra information"
                 )
-            return self(message.message, *message.args)
+            return self(*message)
         if context:
             prefix = context + u'|'
         else:
