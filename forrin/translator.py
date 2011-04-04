@@ -20,8 +20,16 @@ class TranslatableString(object):
     but without any extra arguments.
     """
     def __init__(self, message, plural=None, n=None, context=None, comment=None):
-        self.message = message
-        self.args = plural, n, context, comment
+        # Converting things to unicode strings makes this fail on instantiation
+        # if they're not convertible (e.g. non-ASCII byte strings), rather than
+        # waiting until the string is used.
+        self.message = unicode(message)
+        self.args = (
+                None if plural is None else unicode(plural),
+                None if n is None else int(n),
+                None if context is None else unicode(context),
+                None if comment is None else unicode(comment),
+            )
 
     def __str__(self):
         return str(self.message)
