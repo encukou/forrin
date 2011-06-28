@@ -34,7 +34,7 @@ class TranslatableString(_Base):
             )
 
     def __str__(self):
-        return str(self.message)
+        return unicode(self).encode('utf-8')
 
     def __unicode__(self):
         return unicode(self.message)
