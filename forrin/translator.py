@@ -153,6 +153,8 @@ class BaseTranslator(object):
             self.language = None
 
     def __call__(self, message, plural=None, n=None, context=None, comment=None):
+        if message == '':
+            return ''
         if isinstance(message, TranslatableString):
             assert plural == n == context == comment == None, (
                     "Translatable strings don't need extra information"
