@@ -9,6 +9,7 @@ import six
 
 from forrin.template import Formatter, BaseWord, parse_bool
 
+
 class Word(BaseWord):
     @classmethod
     def guess_type(cls, word, **props):
@@ -18,6 +19,7 @@ class Word(BaseWord):
             return HardAdjective
         else:
             return Word
+
 
 class Adjective(Word):
     def __init__(self, word):
@@ -44,6 +46,7 @@ class Adjective(Word):
         else:
             return self.root + self.endings_n[case_no]
 
+
 class SoftAdjective(Adjective):
     def __init__(self, word):
         if word.endswith('í'):
@@ -55,6 +58,7 @@ class SoftAdjective(Adjective):
     endings_mi = 'í,ího,ímu,í,í,ím,ím,í,ích,ím,í,í,ích,ími'.split(',')
     endings_f = 'í,í,í,í,í,í,í,í,ích,ím,í,í,ích,ími'.split(',')
     endings_n = 'í,ího,ímu,í,í,ím,ím,í,ích,ím,í,í,ích,ími'.split(',')
+
 
 class HardAdjective(Adjective):
     def __init__(self, word):
@@ -69,6 +73,7 @@ class HardAdjective(Adjective):
     endings_n = 'é,ého,ému,é,é,ém,ým,á,ých,ým,á,á,ých,ými'.split(',')
 
 formatter = Formatter('cs', Word)
+
 
 class Template(six.text_type):
     def format(self, *args, **kwargs):

@@ -13,6 +13,7 @@ from forrin import translator
 import forrin.en
 import forrin.cs
 
+
 class TestTranslations(object):
     """gettext-like Translations class. Reports what gets called instead of
     actually translating"""
@@ -23,6 +24,7 @@ class TestTranslations(object):
     def ungettext(self, message, plural, n):
         return '|ungettext(%s, %s, %s)' % (message, plural, n)
     ngettext = ungettext
+
 
 class ConstTranslations(object):
     """gettext-like Translations class. Always returns the same string"""
@@ -67,17 +69,20 @@ outputs_test = [
         'ungettext(ctx|a|b|c, ctx|d|e|f, 3)',
     ]
 
+
 def test_translation_calls():
     _ = translator.BaseTranslator(translations=TestTranslations())
     for (args, kwargs), out in zip(translation_inputs, outputs_test):
         print(args, kwargs, out)
         assert _(*args, **kwargs) == out
 
+
 def test_translatable_string():
     _ = translator.BaseTranslator(translations=TestTranslations())
     for (args, kwargs), out in zip(translation_inputs, outputs_test):
         print(args, kwargs, out)
         assert _(translator.TranslatableString(*args, **kwargs)) == out
+
 
 def test_null_translation():
     _ = translator.BaseTranslator(translations=gettext.NullTranslations())
@@ -99,8 +104,10 @@ def test_null_translation():
         print(args, kwargs, out)
         assert _(*args, **kwargs) == out
 
+
 def test_const_translation():
-    _ = translator.BaseTranslator(translations=ConstTranslations('pre|in|post'))
+    _ = translator.BaseTranslator(translations=ConstTranslations(
+        'pre|in|post'))
     outputs = [
             'pre|in|post',
             'pre|in|post',
@@ -130,6 +137,7 @@ def check_generator(function, args, output):
     print('Should be:', output)
     assert output == actual_output
 
+
 def test_extraction_babel_python():
     func = extract.babel_python
     input = """if True:
@@ -151,6 +159,7 @@ def test_extraction_babel_python():
         ]
     args = (StringIO(input), ['_'], [], {})
     check_generator(func, args, output)
+
 
 def test_extraction_babel_mako():
     try:
@@ -189,6 +198,7 @@ def test_en():
             assert forrin.en.Template(templ).format(*args, **kwargs) == out
         test.description = templ
         yield test
+
 
 def test_cs():
     for templ, args, kwargs, out in [

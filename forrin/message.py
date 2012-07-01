@@ -5,6 +5,7 @@ from datetime import datetime
 
 import forrin
 
+
 class POTFile(POFile):
     def __init__(self,
             fpath=None,
@@ -18,7 +19,8 @@ class POTFile(POFile):
         self._msg_dict = dict()
         if project_name:
             if project_version:
-                metadata.setdefault('Project-Id-Version', "%s %s" % (project_name, project_version))
+                metadata.setdefault('Project-Id-Version',
+                    "%s %s" % (project_name, project_version))
             else:
                 metadata.setdefault('Project-Id', project_name)
         if project_i18n_contact:
@@ -35,15 +37,16 @@ class POTFile(POFile):
 
     def add(self, message):
         merge_key = message.msgid, message.msgid_plural
-        if merge_key in self._msg_dict:
+        try:
             prev = self._msg_dict[merge_key]
+        except KeyError:
+            self.append(message)
+            self._msg_dict[merge_key] = message
+        else:
             prev.occurrences += message.occurrences
             if prev.comment and message.comment:
                 prev.comment += '\n\n'
             prev.comment += message.comment
-        else:
-            self.append(message)
-            self._msg_dict[merge_key] = message
 
     def add_messages(self, messages):
         for message in messages:

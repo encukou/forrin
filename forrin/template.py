@@ -12,9 +12,9 @@ From http://docs.python.org/library/string.html#formatstrings:
     result as if you had called str() on the value. A non-empty format string
     typically modifies the result.
 
-The language formatter introduces a Word type that with a special format syntax,
-and a Template type that overrides .format() to enable formatting even simple
-(Unicode) strings and allow some more magic.
+The language formatter introduces a Word type that with a special format
+syntax, and a Template type that overrides .format() to enable formatting even
+simple (Unicode) strings and allow some more magic.
 
 There are two things to do in formatting:
 1) Guessing the relevant grammatical categories of a given word, and
@@ -47,6 +47,7 @@ import string
 
 import six
 
+
 class Formatter(string.Formatter):
     def __init__(self, lang, word_class, shortcuts={}):
         self.lang = lang
@@ -59,7 +60,8 @@ class Formatter(string.Formatter):
         self.check_unused_args(used_args, args, kwargs)
         return result
 
-    def _vformat(self, format_string, args, kwargs, used_args, recursion_depth):
+    def _vformat(self, format_string, args, kwargs, used_args,
+            recursion_depth):
         """This function does the actual work of formatting.
 
         Mostly reused from string.Formatter._vformat """
@@ -86,10 +88,11 @@ class Formatter(string.Formatter):
 
                 # expand the format spec, if needed
                 format_spec = self._vformat(format_spec, args, kwargs,
-                                            used_args, recursion_depth-1)
+                                            used_args, recursion_depth - 1)
 
                 # format the object and append to the result
-                result.append(self.format_field(obj, format_spec, args, kwargs))
+                result.append(self.format_field(
+                    obj, format_spec, args, kwargs))
 
         return ''.join(result)
 
@@ -99,7 +102,8 @@ class Formatter(string.Formatter):
         else:
             return super(Formatter, self).get_field(field_name, args, kwargs)
 
-    def convert_field(self, value, conversion=None, args=(), kwargs=frozenset()):
+    def convert_field(self, value, conversion=None, args=(),
+            kwargs=frozenset()):
         # we only deal with words
         spec = self.parse_spec(None, conversion, args, kwargs)
         return self.word_class.create(value, **spec)
@@ -133,6 +137,7 @@ class Formatter(string.Formatter):
                 result.update(self.shortcuts[val])
         return result
 
+
 class BaseWord(six.text_type):
     interesting_categories = {}
     dictionary = {}
@@ -148,7 +153,8 @@ class BaseWord(six.text_type):
         elif word in cls.dictionary:
             return cls.dictionary[word]
         elif ' ' in word:
-            return cls.phrase.create(cls.create(w, **props) for w in word.split(' '))
+            return (cls.phrase.create(cls.create(w, **props) for w in
+                word.split(' ')))
         else:
             return cls.guess_type(word, **props)(word, **props)
 
@@ -163,10 +169,13 @@ class BaseWord(six.text_type):
     def add_to_dictionary(cls, word):
         if 'dictionary' not in cls.__dict__:
             cls.dictionary = {}
+
         def decorator(word_class):
             cls.dictionary[word] = word_class(word)
             return word_class
+
         return decorator
+
 
 class BasePhrase(BaseWord):
     @classmethod
@@ -180,6 +189,7 @@ class BasePhrase(BaseWord):
         return ' '.join(w.inflect(**kwargs) for w in self.words)
 
 BaseWord.phrase = BasePhrase
+
 
 def parse_bool(b):
     if b and str(b) in '1 t true y yes True'.split():

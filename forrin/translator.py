@@ -20,7 +20,10 @@ else:
     _get_gettext = operator.attrgetter('gettext')
     _get_ngettext = operator.attrgetter('ngettext')
 
+
 _Base = namedtuple('_base', 'message plural n context comment')
+
+
 class TranslatableString(_Base):
     """Encapsulates a string and its translation information.
 
@@ -55,8 +58,9 @@ class TranslatableString(_Base):
 
 _ = TranslatableString
 
+
 class BaseTranslator(object):
-    """The translator. A callable object indended to be subclassed and used as _.
+    """A callable object indended to be subclassed and used as _.
 
     Use
     ---
@@ -79,7 +83,7 @@ class BaseTranslator(object):
     - dir: the locale directory within `package`. Defaults to "i18n".
     - domain: the gettext domain used. By default, same as the `package`
 
-    Constructor parameters are 
+    Constructor parameters are
     - lang: the language identifier
     - translations: override the underlying gettext translations class
         entirely. (Used mainly in testing.)
@@ -163,7 +167,8 @@ class BaseTranslator(object):
             self.translation = translations
             self.language = None
 
-    def __call__(self, message, plural=None, n=None, context=None, comment=None):
+    def __call__(self, message, plural=None, n=None,
+            context=None, comment=None):
         if message == '':
             return ''
         if isinstance(message, TranslatableString):
@@ -189,6 +194,7 @@ class BaseTranslator(object):
                 translated = prefix
         return handle_template(translated, self.language)
 
+
 def handle_template(message, language='en'):
     if message and message[0] == '@':
         if language:
@@ -201,6 +207,7 @@ def handle_template(message, language='en'):
             Template = forrin.template.Template
         return Template(message[1:])
     return message
+
 
 class NullTranslator(object):
     """Looks like a Translator, quacks like a Translator, but doesn't actually

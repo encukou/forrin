@@ -17,11 +17,11 @@ setup_args = dict(
             'six',
         ],
 
-    entry_points = {
+    entry_points={
             'babel.extractors': [
                     'forrin = forrin.extract:babel_python',
                     'forrin-mako = forrin.extract:babel_mako',
-                ]
+                ],
         },
 )
 

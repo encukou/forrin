@@ -4,10 +4,12 @@ import six
 
 from forrin.template import Formatter, BaseWord
 
+
 class Word(BaseWord):
     @property
     def begins_with_vowel(self):
         return self and self[0].lower() in 'aeiou'
+
 
 @Word.add_to_dictionary('a')
 @Word.add_to_dictionary('an')
@@ -23,6 +25,7 @@ class IndefiniteArticle(Word):
             return IndefiniteArticle(self[0])
 
 formatter = Formatter('en', Word)
+
 
 class Template(six.text_type):
     def format(self, *args, **kwargs):

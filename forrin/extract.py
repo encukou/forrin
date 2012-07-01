@@ -9,6 +9,7 @@ import polib
 
 _args = "message plural n context comment".split()
 
+
 def babel_wrapper(func):
     @functools.wraps(func)
     def wrapped(fileobj, keywords, comment_tags, options):
@@ -28,12 +29,15 @@ def babel_wrapper(func):
             yield lineno, funcname, msgid, comments
     return wrapped
 
+
 def extract_python(filename, fileobj=None, keywords=['_'], **kwargs):
     if fileobj is None:
         fileobj = open(filename)
-    return extract_from_string(fileobj.read(), filename, keywords=['_'], **kwargs)
+    return extract_from_string(
+        fileobj.read(), filename, keywords=['_'], **kwargs)
 
 babel_python = babel_wrapper(extract_python)
+
 
 def extract_from_string(string, filename, keywords=['_'], **kwargs):
     tree = compile(
@@ -44,6 +48,7 @@ def extract_from_string(string, filename, keywords=['_'], **kwargs):
             dont_inherit=True,
         )
     return from_ast(tree, filename, keywords)
+
 
 def from_ast(node, filename, keywords, flags=[]):
     if isinstance(node, ast.Call):
@@ -85,6 +90,7 @@ def from_ast(node, filename, keywords, flags=[]):
         for result in from_ast(child, filename, keywords, child_flags):
             yield result
 
+
 def get_funcname(node):
     if isinstance(node, ast.Name):
         # gettext(...)
@@ -97,11 +103,13 @@ def get_funcname(node):
         # something like (lst[0])(...)
         return None
 
+
 def getstring(maybenode):
     if maybenode is None:
         return None
     else:
         return maybenode.s
+
 
 try:
     from mako.template import Template
@@ -133,7 +141,8 @@ else:
         fileobj = StringIO(template.code)
         messages = extract_python(filename, fileobj, keywords, **kwargs)
         for message in messages:
-            message.occurrences = [(o[0], linenomap[o[1]]) for o in message.occurrences]
+            message.occurrences = [
+                    (o[0], linenomap[o[1]]) for o in message.occurrences]
             yield message
 
     babel_mako = babel_wrapper(extract_mako)
