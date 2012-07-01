@@ -1,13 +1,24 @@
 # Encoding: UTF-8
+from __future__ import print_function, unicode_literals
 
+import sys
 import os.path
 import warnings
+import operator
 from collections import namedtuple
 
+import six
 import gettext
 import pkg_resources
 
 import forrin.template
+
+if sys.version_info < (3, 0):
+    _get_gettext = operator.attrgetter('ugettext')
+    _get_ngettext = operator.attrgetter('ungettext')
+else:
+    _get_gettext = operator.attrgetter('gettext')
+    _get_ngettext = operator.attrgetter('ngettext')
 
 _Base = namedtuple('_base', 'message plural n context comment')
 class TranslatableString(_Base):
@@ -26,11 +37,11 @@ class TranslatableString(_Base):
         # if they're not convertible (e.g. non-ASCII byte strings), rather than
         # waiting until the string is used.
         return _Base.__new__(cls,
-                unicode(message),
-                None if plural is None else unicode(plural),
+                six.text_type(message),
+                None if plural is None else six.text_type(plural),
                 None if n is None else int(n),
-                None if context is None else unicode(context),
-                None if comment is None else unicode(comment),
+                None if context is None else six.text_type(context),
+                None if comment is None else six.text_type(comment),
             )
 
     def __str__(self):
@@ -161,13 +172,13 @@ class BaseTranslator(object):
                 )
             return self(*message)
         if context:
-            prefix = context + u'|'
+            prefix = context + '|'
         else:
-            prefix = u''
+            prefix = ''
         if n is None:
-            translated = self.translation.ugettext(prefix + message)
+            translated = _get_gettext(self.translation)(prefix + message)
         else:
-            translated = self.translation.ungettext(
+            translated = _get_ngettext(self.translation)(
                     prefix + message,
                     prefix + plural,
                     n
@@ -184,7 +195,7 @@ def handle_template(message, language='en'):
             try:
                 mod = __import__('forrin.' + language, fromlist='Template')
                 Template = mod.Template
-            except (ImportError, AttributeError), e:
+            except (ImportError, AttributeError) as e:
                 Template = forrin.template.Template
         else:
             Template = forrin.template.Template

@@ -1,3 +1,7 @@
+from __future__ import print_function, unicode_literals
+
+import six
+
 from forrin.template import Formatter, BaseWord
 
 class Word(BaseWord):
@@ -20,6 +24,6 @@ class IndefiniteArticle(Word):
 
 formatter = Formatter('en', Word)
 
-class Template(unicode):
+class Template(six.text_type):
     def format(self, *args, **kwargs):
         return formatter.format(self, *args, **kwargs)

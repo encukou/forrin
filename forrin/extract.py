@@ -1,7 +1,9 @@
+from __future__ import print_function, unicode_literals
+
 import ast
 import itertools
 import functools
-from StringIO import StringIO
+from six import StringIO
 
 import polib
 

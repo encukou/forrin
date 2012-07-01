@@ -41,7 +41,11 @@ in English, "{=a:*obj} {obj}" will provide a word with its indefinite article.
 
 """
 
+from __future__ import print_function, unicode_literals
+
 import string
+
+import six
 
 class Formatter(string.Formatter):
     def __init__(self, lang, word_class, shortcuts={}):
@@ -129,7 +133,7 @@ class Formatter(string.Formatter):
                 result.update(self.shortcuts[val])
         return result
 
-class BaseWord(unicode):
+class BaseWord(six.text_type):
     interesting_categories = {}
     dictionary = {}
 
