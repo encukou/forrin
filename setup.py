@@ -7,6 +7,8 @@ setup_args = dict(
     version='0.1-alpha',
     packages=find_packages(),
 
+    url='https://github.com/encukou/forrin',
+
     description="""Localization helpers""",
     author='Petr Viktorin',
     author_email='encukou@gmail.com',
