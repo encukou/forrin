@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup_args = dict(
     name='forrin',
-    version='0.1-alpha',
+    version='0.1.1-alpha',
     packages=find_packages(),
 
     url='https://github.com/encukou/forrin',
