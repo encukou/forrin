@@ -12,6 +12,7 @@ import gettext
 import pkg_resources
 
 import forrin.template
+import forrin.backend
 
 if sys.version_info < (3, 0):
     _get_gettext = operator.attrgetter('ugettext')
@@ -121,16 +122,27 @@ class BaseTranslator(object):
         default: The language used in code, for untranslated messages. Set to
             None to disable a default.
         """
+        yielded = set()
         i18n_dir = self.i18n_directory
         if default:
             yield default
+            yielded.add(default)
+        for filename in os.listdir(i18n_dir):
+            # PO files directly in i18n directory
+            if file.endswith('.po'):
+                lang = filename[:-3]
+                if lang not in yielded:
+                    yield lang
+                    yielded.add(lang)
         for root, dirs, files in os.walk(i18n_dir):
+            # Gettext directory hierarchy
             components = root.split(os.sep)
             if components[-1] == 'LC_MESSAGES':
                 if self.package + '.po' in files:
                     lang = components[-2]
-                    if lang != default:
-                        yield components[-2]
+                    if lang not in yielded:
+                        yield lang
+                        yielded.add(lang)
 
     def __init__(self,
             languages=None,
@@ -148,21 +160,27 @@ class BaseTranslator(object):
             else:
                 if directory is None:
                     directory = self.i18n_directory
-                gettext.bindtextdomain(self.package, directory)
-                try:
-                    self.translation = gettext.translation(
-                            domain=getattr(self, 'domain', self.package),
-                            localedir=directory,
-                            languages=languages,
-                        )
+                if os.path.exists(os.path.join(directory,
+                        '%s.po' % languages[0])):
+                    self.translation = forrin.backend.SQLiteBackend(
+                        self.package, directory, languages)
                     self.language = languages[0]
-                except IOError:
-                    self.translation = gettext.NullTranslations()
-                    self.language = None
-                    warnings.warn(RuntimeWarning(
-                            '%s translations for %s not found in %s'
-                                % (languages, self.package, directory)
-                        ))
+                else:
+                    gettext.bindtextdomain(self.package, directory)
+                    try:
+                        self.translation = gettext.translation(
+                                domain=getattr(self, 'domain', self.package),
+                                localedir=directory,
+                                languages=languages,
+                            )
+                        self.language = languages[0]
+                    except IOError:
+                        self.translation = gettext.NullTranslations()
+                        self.language = None
+                        warnings.warn(RuntimeWarning(
+                                '%s translations for %s not found in %s'
+                                    % (languages, self.package, directory)
+                            ))
         else:
             self.translation = translations
             self.language = None
