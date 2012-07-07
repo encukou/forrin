@@ -26,6 +26,6 @@ setup_args = dict(
 )
 
 if sys.version_info < (2, 7):
-    setup_args.install_requires.append('argparse')
+    setup_args['install_requires'].append('argparse')
 
 setup(**setup_args)
