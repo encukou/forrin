@@ -129,7 +129,7 @@ class BaseTranslator(object):
             yielded.add(default)
         for filename in os.listdir(i18n_dir):
             # PO files directly in i18n directory
-            if file.endswith('.po'):
+            if filename.endswith('.po'):
                 lang = filename[:-3]
                 if lang not in yielded:
                     yield lang
@@ -153,6 +153,7 @@ class BaseTranslator(object):
         ):
         self.context = context
         self.package = package or getattr(self, 'package', self.__module__)
+        self.domain = getattr(self, 'domain', self.package)
         if translations is None:
             if languages is None:
                 self.translation = gettext.NullTranslations()
@@ -169,7 +170,7 @@ class BaseTranslator(object):
                     gettext.bindtextdomain(self.package, directory)
                     try:
                         self.translation = gettext.translation(
-                                domain=getattr(self, 'domain', self.package),
+                                domain=self.domain,
                                 localedir=directory,
                                 languages=languages,
                             )

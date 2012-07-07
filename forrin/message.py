@@ -26,7 +26,6 @@ class POTFile(POFile):
         if project_i18n_contact:
             metadata.setdefault('Report-Msgid-Bugs-To', project_i18n_contact)
         metadata.setdefault('POT-Creation-Date', datetime.now().isoformat())
-        metadata.setdefault('PO-Revision-Date', 'YEAR-MO-DA HO:MI+ZONE')
         metadata.setdefault('Last-Translator', 'FULL NAME <EMAIL@ADDRESS>')
         metadata.setdefault('Language-Team', 'LANGUAGE <LL@li.org>')
         metadata.setdefault('MIME-Version', '1.0')
