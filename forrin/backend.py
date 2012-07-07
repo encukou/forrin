@@ -25,7 +25,7 @@ class SQLiteBackend(object):
         if _db:
             self.db = _db
         else:
-            db_filename = os.path.join(directory, '.%s.forrin_cache' % domain)
+            db_filename = os.path.join(directory, '%s.forrin-db' % domain)
             try:
                 self.db = sqlite3.connect(db_filename)
             except IOError:
@@ -102,7 +102,8 @@ class SQLiteBackend(object):
             return plural
 
     def gettext(self, msgid, _n=0):
-        for [msgstr] in self.db.execute('''SELECT text FROM translation
+        for [msgstr] in self.db.execute('''SELECT translation.translation
+                FROM translation
                 INNER JOIN source ON (source.id = translation.source_id)
                 WHERE translation.lang=? AND source.text=? AND plural_number=?
                 ''', (self.lang, msgid, _n)):
