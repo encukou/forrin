@@ -2,8 +2,6 @@
 
 from __future__ import unicode_literals
 
-import gettext
-
 import pytest
 import six
 from six import StringIO
@@ -17,13 +15,11 @@ import forrin.cs
 class TestTranslations(object):
     """gettext-like Translations class. Reports what gets called instead of
     actually translating"""
-    def ugettext(self, message):
+    def gettext(self, message):
         return '|ugettext(%s)' % message
-    gettext = ugettext
 
-    def ungettext(self, message, plural, n):
+    def ngettext(self, message, plural, n):
         return '|ungettext(%s, %s, %s)' % (message, plural, n)
-    ngettext = ungettext
 
 
 class ConstTranslations(object):
@@ -31,13 +27,11 @@ class ConstTranslations(object):
     def __init__(self, string):
         self._string = string
 
-    def ugettext(self, message):
+    def gettext(self, message):
         return self._string
-    gettext = ugettext
 
-    def ungettext(self, message, plural, n):
+    def ngettext(self, message, plural, n):
         return self._string
-    ngettext = ungettext
 
 translation_inputs = [
         (('text',), dict()),
@@ -85,7 +79,7 @@ def test_translatable_string():
 
 
 def test_null_translation():
-    _ = translator.BaseTranslator(translations=gettext.NullTranslations())
+    _ = translator.BaseTranslator(translations=translator.NullTranslations())
     outputs = [
             'text',
             'one',

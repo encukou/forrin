@@ -8,18 +8,10 @@ import operator
 from collections import namedtuple
 
 import six
-import gettext
 import pkg_resources
 
 import forrin.template
 import forrin.backend
-
-if sys.version_info < (3, 0):
-    _get_gettext = operator.attrgetter('ugettext')
-    _get_ngettext = operator.attrgetter('ungettext')
-else:
-    _get_gettext = operator.attrgetter('gettext')
-    _get_ngettext = operator.attrgetter('ngettext')
 
 
 _Base = namedtuple('_base', 'message plural n context comment')
@@ -66,11 +58,11 @@ class BaseTranslator(object):
     Use
     ---
 
-    Instead of using gettext's ugettext and ungettext, this object is all
-    that's needed, thanks to Python's keyword arguments:
+    thanks to Python's keyword arguments, this object is all that's needed to
+    mark translatable strings:
     _('text') => "text"
     (_('%s house', '%s houses', n=num) % num) => "1 house" or "2 houses", etc.
-    _(u'file', context='verb') => u"file", but will be translated as
+    _(u'file', context='verb') => u"file", but can be translated as
         “to file something” as opposed to “named chunk of data” in languages
         where the distinction matters
 
@@ -82,14 +74,19 @@ class BaseTranslator(object):
     - package: the package in which to look for i18n. If not set explicitly,
         the class's __module__ is used.
     - dir: the locale directory within `package`. Defaults to "i18n".
-    - domain: the gettext domain used. By default, same as the `package`
+    - domain: the domain (aka project identifier) used. By default, same as
+        the `package`
 
     Constructor parameters are
-    - lang: the language identifier
+    - languages: a list of language identifiers; first is the one we want to
+        use, followed fallbacks in order of preference
     - translations: override the underlying gettext translations class
-        entirely. (Used mainly in testing.)
+        entirely. The given object must support `gettext` and `ngettext`
+        methods, with API defined by the Python gettext module. (For Python 2,
+        these should use Unicode, i.e. gettext's ugettext & ungettext.)
     - directory: can be used to override the po-file directory. Divined from
         the package & dir class attributes if missing.
+    - package: override the class-level package attribute
 
     Notes
     -----
@@ -104,7 +101,7 @@ class BaseTranslator(object):
 
     Forrin's message extractors must be used to extract messages, naturally.
 
-    Unicode (u*gettext) is used everywhere.
+    Unicode is used everywhere.
     """
     dir = 'i18n'
 
@@ -134,64 +131,33 @@ class BaseTranslator(object):
                 if lang not in yielded:
                     yield lang
                     yielded.add(lang)
-        for root, dirs, files in os.walk(i18n_dir):
-            # Gettext directory hierarchy
-            components = root.split(os.sep)
-            if components[-1] == 'LC_MESSAGES':
-                if self.package + '.po' in files:
-                    lang = components[-2]
-                    if lang not in yielded:
-                        yield lang
-                        yielded.add(lang)
 
     def __init__(self,
             languages=None,
             translations=None,
             directory=None,
             package=None,
-            context=None,
         ):
-        self.context = context
         self.package = package or getattr(self, 'package', self.__module__)
         self.domain = getattr(self, 'domain', self.package)
         if translations is None:
             if languages is None:
-                self.translation = gettext.NullTranslations()
+                self.translation = NullTranslations()
                 self.language = None
             else:
                 if directory is None:
                     directory = self.i18n_directory
-                if os.path.exists(os.path.join(directory,
-                        '%s.po' % languages[0])):
-                    self.translation = forrin.backend.SQLiteBackend(
-                        self.package, directory, languages)
-                    self.language = languages[0]
-                else:
-                    gettext.bindtextdomain(self.package, directory)
-                    try:
-                        self.translation = gettext.translation(
-                                domain=self.domain,
-                                localedir=directory,
-                                languages=languages,
-                            )
-                        self.language = languages[0]
-                    except IOError:
-                        self.translation = gettext.NullTranslations()
-                        self.language = None
-                        warnings.warn(RuntimeWarning(
-                                '%s translations for %s not found in %s'
-                                    % (languages, self.package, directory)
-                            ))
+                self.translation = forrin.backend.SQLiteBackend(
+                    self.package, directory, languages)
+                self.language = languages[0]
         else:
             self.translation = translations
             self.language = None
 
     def __call__(self, message, plural=None, n=None,
             context=None, comment=None):
-        if message == '':
-            return ''
         if isinstance(message, TranslatableString):
-            assert plural == n == context == comment == None, (
+            assert plural is n is context is comment is None, (
                     "Translatable strings don't need extra information"
                 )
             return self(*message)
@@ -200,9 +166,9 @@ class BaseTranslator(object):
         else:
             prefix = ''
         if n is None:
-            translated = _get_gettext(self.translation)(prefix + message)
+            translated = self.translation.gettext(prefix + message)
         else:
-            translated = _get_ngettext(self.translation)(
+            translated = self.translation.ngettext(
                     prefix + message,
                     prefix + plural,
                     n
@@ -237,3 +203,13 @@ class NullTranslator(object):
 
     def __call__(self, message, *stuff, **more_stuff):
         return handle_template(message)
+
+class NullTranslations(object):
+    def gettext(self, msgid):
+        return msgid
+
+    def ngettext(self, singular, plural, n):
+        if n == 1:
+            return singular
+        else:
+            return plural

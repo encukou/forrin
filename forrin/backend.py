@@ -113,6 +113,3 @@ class SQLiteBackend(object):
     def ngettext(self, msgid, plural, n):
         # XXX: implement
         return self.gettext(msgid)
-
-    ugettext = gettext
-    ungettext = ngettext
